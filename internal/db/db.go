@@ -6,6 +6,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"os"
 	"log"
+	"fmt"
 )
 
 type Manager struct {
@@ -25,7 +26,31 @@ func (d *Manager) Init(){
 	d.db = db
 }
 
-func (d *Manager) InsertOrder(){
+func (d *Manager) InsertOrder(id string, data []byte){
+	_, err := d.db.Exec("INSERT INTO orders (id, data) VALUES($1, $2)", id, data)
+	if err != nil {
+		fmt.Println(err)
+	}
+	//handleError("Could not insert", err)
+}
+
+func (d *Manager) ListAll() {
+	rows, err := d.db.Query("SELECT * FROM orders")
+	handleError("", err)
+	defer rows.Close()
+	for rows.Next() {
+        var id string
+        var data string
+        err = rows.Scan(&id, &data)
+        if err != nil {
+            log.Fatalf("Failed to retrieve row because %s", err)
+        }
+		fmt.Println(id, data)
+    }
+	if err := rows.Err(); err != nil {
+      log.Fatalf("Error encountered while iterating over rows: %s", err)
+    }
+
 }
 
 func handleError(msg string, err error) {
@@ -34,25 +59,3 @@ func handleError(msg string, err error) {
 	}
 }
 
-/*
-func Con() {
-	rows, err := db.Query("SELECT * FROM orders")
-	if err != nil {
-        log.Fatalf("Database query failed because %s", err)
-    }
-	defer rows.Close()
-	for rows.Next() {
-        var id string
-        var data string
-        err = rows.Scan(&id, &data)
-		fmt.Println(id, data)
-        if err != nil {
-            log.Fatalf("Failed to retrieve row because %s", err)
-        }
-    }
-
-	if err := rows.Err(); err != nil {
-      log.Fatalf("Error encountered while iterating over rows: %s", err)
-    }
-}
-*/

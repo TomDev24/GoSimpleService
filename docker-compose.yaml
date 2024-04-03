@@ -9,3 +9,9 @@ services:
       POSTGRES_DB: "db"
     ports:
       - "5432:5432"
+
+  nats:
+    image: nats-streaming
+    ports:
+      - "4222:4222"
+      - "8222:8222"

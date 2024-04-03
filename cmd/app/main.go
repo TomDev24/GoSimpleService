@@ -4,10 +4,11 @@ import (
 	"github.com/TomDev24/GoSimpleService/internal/db"
 	"github.com/TomDev24/GoSimpleService/internal/model"
 	"encoding/json"
-	"fmt"
 	"log"
 	"github.com/nats-io/stan.go"
 )
+
+var d db.Manager;
 
 func handler(msg *stan.Msg) {
 	var o model.Order
@@ -15,12 +16,12 @@ func handler(msg *stan.Msg) {
 	if err != nil{
 		log.Fatal(err)
 	}
-	fmt.Printf("%+v\n", o)
+	//fmt.Printf("%+v\n", o)
+	d.InsertOrder(o.OrderUid, msg.Data)
+	d.ListAll()
 }
 
 func main() {
-	var d db.Manager;
-
 	d.Init()
 	sc, err := stan.Connect("test-cluster", "1", stan.NatsURL("nats://localhost:4222"),
 		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
