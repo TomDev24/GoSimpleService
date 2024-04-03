@@ -1,15 +1,16 @@
 package main
 
 import (
-	"bytes"
 	"log"
 	"github.com/nats-io/stan.go"
 	"time"
 	"github.com/brianvoe/gofakeit/v7"
-	"encoding/gob"
+	"encoding/json"
+	"github.com/TomDev24/GoSimpleService/internal/model"
 )
 
-func EncodeToBytes(o *Order) []byte {
+/*
+func EncodeToBytes(o *model.Order) []byte {
 	buf := bytes.Buffer{}
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(o)
@@ -18,6 +19,7 @@ func EncodeToBytes(o *Order) []byte {
 	}
 	return buf.Bytes()
 }
+*/
 
 func main() {
 	sc, err := stan.Connect("test-cluster", "2", stan.NatsURL("nats://localhost:4222"),
@@ -29,12 +31,16 @@ func main() {
 	}
 	defer sc.Close()
 	for {
-		var o Order
+		var o model.Order
 		err := gofakeit.Struct(&o)
 		if err != nil{
 			log.Fatal(err)
 		}
-		sc.Publish("action", EncodeToBytes(&o))
+		b, err := json.Marshal(o)
+		if err != nil{
+			log.Fatal(err)
+		}
+		sc.Publish("action", b)
 		time.Sleep(3 * time.Second)
 	}
 }

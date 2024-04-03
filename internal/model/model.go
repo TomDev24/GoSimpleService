@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"time"
@@ -11,7 +11,7 @@ type Order struct {
 		Address string `json:"address"`
 		City    string `json:"city"`
 		Email   string `json:"email"`
-		Name    string `json:"name"`
+		Name    string `json:"name" fake:"{firstname}"`
 		Phone   string `json:"phone"`
 		Region  string `json:"region"`
 		Zip     string `json:"zip"`
@@ -49,5 +49,5 @@ type Order struct {
 	} `json:"payment"`
 	Shardkey    string `json:"shardkey"`
 	SmID        int    `json:"sm_id"`
-	TrackNumber string `json:"track_number"`
+	TrackNumber string `json:"track_number" fake:"{number}"`
 }
