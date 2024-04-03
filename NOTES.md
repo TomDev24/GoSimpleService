@@ -15,4 +15,6 @@ Nats streaming is built on top of Nats.
 [Publisher example](https://github.com/nats-io/stan.go/blob/main/examples/stan-pub/main.go)
 [Subscriber example](https://github.com/nats-io/stan.go/blob/main/examples/stan-sub/main.go)
 
+## Usefull things
 
+[Generate struct out of json](https://github.com/twpayne/go-jsonstruct)
