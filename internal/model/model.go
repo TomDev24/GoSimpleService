@@ -5,8 +5,8 @@ import (
 )
 
 type Order struct {
-	CustomerID  string    `json:"customer_id"`
-	DateCreated time.Time `json:"date_created"`
+	CustomerID  string    `json:"customer_id" validate:"required"`
+	DateCreated time.Time `json:"date_created" validate:"required"`
 	Delivery    struct {
 		Address string `json:"address"`
 		City    string `json:"city"`
@@ -15,7 +15,7 @@ type Order struct {
 		Phone   string `json:"phone"`
 		Region  string `json:"region"`
 		Zip     string `json:"zip"`
-	} `json:"delivery"`
+	} `json:"delivery" validate:"required"`
 	DeliveryService   string `json:"delivery_service"`
 	Entry             string `json:"entry"`
 	InternalSignature string `json:"internal_signature"`
@@ -31,10 +31,10 @@ type Order struct {
 		Status      int    `json:"status"`
 		TotalPrice  int    `json:"total_price"`
 		TrackNumber string `json:"track_number"`
-	} `json:"items"`
-	Locale   string `json:"locale"`
-	OofShard string `json:"oof_shard"`
-	OrderUid string `json:"order_uid"`
+	} `json:"items" validate:"required"`
+	Locale   string `json:"locale" validate:"required"`
+	OofShard string `json:"oof_shard" validate:"required"`
+	OrderUid string `json:"order_uid" validate:"required"`
 	Payment  struct {
 		Amount       int    `json:"amount"`
 		Bank         string `json:"bank"`
@@ -46,8 +46,8 @@ type Order struct {
 		Provider     string `json:"provider"`
 		RequestID    string `json:"request_id"`
 		Transaction  string `json:"transaction"`
-	} `json:"payment"`
-	Shardkey    string `json:"shardkey"`
-	SmID        int    `json:"sm_id"`
-	TrackNumber string `json:"track_number" fake:"{number}"`
+	} `json:"payment" validate:"required"`
+	Shardkey    string `json:"shardkey" validate:"required"`
+	SmID        int    `json:"sm_id" validate:"required"`
+	TrackNumber string `json:"track_number" fake:"{number}" validate:"required"`
 }

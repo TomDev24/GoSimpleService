@@ -1,16 +1,16 @@
 package server
 
 import (
-	"net/http"
 	"github.com/TomDev24/GoSimpleService/internal/cache"
 	"github.com/TomDev24/GoSimpleService/internal/db"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type Server struct {
-	router	*gin.Engine
-	cache	*cache.Cache
-	db		*db.Manager
+	router *gin.Engine
+	cache  *cache.Cache
+	db     *db.Manager
 }
 
 func (s *Server) getOrderByid(c *gin.Context) {
@@ -24,7 +24,6 @@ func (s *Server) getOrderByid(c *gin.Context) {
 	c.IndentedJSON(http.StatusNotFound, "Not found")
 }
 
-
 func (s *Server) getAllOrders(c *gin.Context) {
 	orders, err := s.db.GetAllOrders()
 	if err != nil {
@@ -34,12 +33,11 @@ func (s *Server) getAllOrders(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, orders)
 }
 
-func (s *Server) Run(c *cache.Cache, db *db.Manager){
+func (s *Server) Run(c *cache.Cache, db *db.Manager) {
 	router := gin.Default()
-	s.cache, s.db, s.router  = c, db, router
+	s.cache, s.db, s.router = c, db, router
 	router.GET("/orders/", s.getAllOrders)
 	router.GET("/orders/:id", s.getOrderByid)
 
-    router.Run("localhost:8080")
+	router.Run("localhost:8080")
 }
-

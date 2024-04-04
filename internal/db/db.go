@@ -3,11 +3,11 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
-	"os"
 	"errors"
 	"github.com/TomDev24/GoSimpleService/internal/model"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
+	"os"
 )
 
 type Manager struct {
@@ -21,7 +21,7 @@ func (d *Manager) Init() error {
 	}
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
-		return errors.New("Unable to connect to database")
+		return err
 	}
 	d.db = db
 
@@ -31,19 +31,19 @@ func (d *Manager) Init() error {
 	return nil
 }
 
-func (d *Manager) Close(){
+func (d *Manager) Close() {
 	d.db.Close()
 }
 
 func (d *Manager) CreateOrdersTable() error {
 	bytes, err := os.ReadFile("msc/schema.sql")
 	if err != nil {
-		return errors.New("Error while openening schema.sql")
+		return err
 	}
 
 	_, err = d.db.Exec(string(bytes))
 	if err != nil {
-		return errors.New("Failed to create Orders table")
+		return err
 	}
 	return nil
 }
@@ -67,20 +67,20 @@ func (d *Manager) GetAllOrders() ([]model.Order, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-        var id string
-        var data string
-        err = rows.Scan(&id, &data)
-        if err != nil {
+		var id string
+		var data string
+		err = rows.Scan(&id, &data)
+		if err != nil {
 			return nil, err
-        }
+		}
 		err = json.Unmarshal([]byte(data), &order)
-        if err != nil {
+		if err != nil {
 			return nil, err
-        }
+		}
 		orders = append(orders, order)
-    }
+	}
 	if err = rows.Err(); err != nil {
 		return nil, err
-    }
+	}
 	return orders, nil
 }

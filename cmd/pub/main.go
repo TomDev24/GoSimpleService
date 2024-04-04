@@ -1,32 +1,32 @@
 package main
 
 import (
-	"os"
-	"log"
-	"time"
 	"encoding/json"
-	"math/rand/v2"
 	"github.com/TomDev24/GoSimpleService/internal/model"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/nats-io/stan.go"
+	"log"
+	"math/rand/v2"
+	"os"
+	"time"
 )
 
 type Bar struct {
-	Name    string
-	Number  int
-	Float   float32
+	Name   string
+	Number int
+	Float  float32
 }
 
 func main() {
-	var o 		model.Order
-	var bar 	Bar
-	var bytes 	[]byte
+	var o model.Order
+	var bar Bar
+	var bytes []byte
 
 	sc, err := stan.Connect("test-cluster", "pub", stan.NatsURL("nats://localhost:4222"),
 		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
 			log.Fatalf("Connection lost, reason: %v", reason)
 		}))
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 	defer sc.Close()
@@ -35,22 +35,21 @@ func main() {
 		switch dice := rand.IntN(3); dice {
 		case 0:
 			// send correct model
-			data, err := os.ReadFile("./msc/model.json")
+			bytes, err = os.ReadFile("./msc/model.json")
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = json.Unmarshal(data, &o)
 		case 1:
 			// send correct model, with fake data
 			err = gofakeit.Struct(&o)
-			if err != nil{
+			if err != nil {
 				log.Fatal(err)
 			}
 			bytes, err = json.Marshal(o)
 		case 2:
 			// send incorrect model
 			err = gofakeit.Struct(&bar)
-			if err != nil{
+			if err != nil {
 				log.Fatal(err)
 			}
 			bytes, err = json.Marshal(&bar)

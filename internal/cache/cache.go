@@ -2,14 +2,14 @@ package cache
 
 import (
 	"errors"
-	"log"
-	"github.com/TomDev24/GoSimpleService/internal/model"
 	"github.com/TomDev24/GoSimpleService/internal/db"
+	"github.com/TomDev24/GoSimpleService/internal/model"
+	"log"
 )
 
 type Cache struct {
-	data 	map[string]model.Order
-	db		*db.Manager
+	data map[string]model.Order
+	db   *db.Manager
 }
 
 func (c *Cache) Init(db *db.Manager) {
@@ -43,4 +43,3 @@ func (c *Cache) Get(id string) (model.Order, bool) {
 	value, ok := c.data[id]
 	return value, ok
 }
-
