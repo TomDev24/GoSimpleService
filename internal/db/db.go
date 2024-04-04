@@ -2,60 +2,85 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
+	"os"
+	"errors"
+	"github.com/TomDev24/GoSimpleService/internal/model"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
-	"os"
-	"log"
-	"fmt"
 )
 
 type Manager struct {
 	db *sql.DB
 }
 
-func (d *Manager) Init(){
+func (d *Manager) Init() error {
 	connStr := os.Getenv("DB_STR")
-	//handle error
+	if connStr == "" {
+		return errors.New("Could not find environment variable")
+	}
 	db, err := sql.Open("pgx", connStr)
-	handleError("Unable to connect to database", err)
-
-	f, err := os.ReadFile("msc/schema.sql")
-	handleError("Error while opening file", err)
-	_, err = db.Exec(string(f))
-	handleError("Failed to create table", err)
+	if err != nil {
+		return errors.New("Unable to connect to database")
+	}
 	d.db = db
+
+	if err = d.CreateOrdersTable(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (d *Manager) InsertOrder(id string, data []byte){
+func (d *Manager) Close(){
+	d.db.Close()
+}
+
+func (d *Manager) CreateOrdersTable() error {
+	bytes, err := os.ReadFile("msc/schema.sql")
+	if err != nil {
+		return errors.New("Error while openening schema.sql")
+	}
+
+	_, err = d.db.Exec(string(bytes))
+	if err != nil {
+		return errors.New("Failed to create Orders table")
+	}
+	return nil
+}
+
+func (d *Manager) InsertOrder(id string, data []byte) error {
 	_, err := d.db.Exec("INSERT INTO orders (id, data) VALUES($1, $2)", id, data)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
-	//handleError("Could not insert", err)
+	return nil
 }
 
-func (d *Manager) ListAll() {
+func (d *Manager) GetAllOrders() ([]model.Order, error) {
+	var order model.Order
+	var orders []model.Order
+
 	rows, err := d.db.Query("SELECT * FROM orders")
-	handleError("", err)
+	if err != nil {
+		return nil, err
+	}
 	defer rows.Close()
+
 	for rows.Next() {
         var id string
         var data string
         err = rows.Scan(&id, &data)
         if err != nil {
-            log.Fatalf("Failed to retrieve row because %s", err)
+			return nil, err
         }
-		fmt.Println(id, data)
+		err = json.Unmarshal([]byte(data), &order)
+        if err != nil {
+			return nil, err
+        }
+		orders = append(orders, order)
     }
-	if err := rows.Err(); err != nil {
-      log.Fatalf("Error encountered while iterating over rows: %s", err)
+	if err = rows.Err(); err != nil {
+		return nil, err
     }
-
+	return orders, nil
 }
-
-func handleError(msg string, err error) {
-    if err != nil {
-        log.Fatalf("%s %s", msg, err)
-	}
-}
-

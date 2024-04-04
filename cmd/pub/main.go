@@ -3,16 +3,26 @@ package main
 import (
 	"os"
 	"log"
-	"github.com/nats-io/stan.go"
 	"time"
-	"github.com/brianvoe/gofakeit/v7"
 	"encoding/json"
-	"github.com/TomDev24/GoSimpleService/internal/model"
 	"math/rand/v2"
+	"github.com/TomDev24/GoSimpleService/internal/model"
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/nats-io/stan.go"
 )
 
+type Bar struct {
+	Name    string
+	Number  int
+	Float   float32
+}
+
 func main() {
-	sc, err := stan.Connect("test-cluster", "2", stan.NatsURL("nats://localhost:4222"),
+	var o 		model.Order
+	var bar 	Bar
+	var bytes 	[]byte
+
+	sc, err := stan.Connect("test-cluster", "pub", stan.NatsURL("nats://localhost:4222"),
 		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
 			log.Fatalf("Connection lost, reason: %v", reason)
 		}))
@@ -20,25 +30,35 @@ func main() {
 		log.Fatal(err)
 	}
 	defer sc.Close()
+
 	for {
-		var o model.Order
-		if rand.IntN(2) == 1 {
+		switch dice := rand.IntN(3); dice {
+		case 0:
+			// send correct model
 			data, err := os.ReadFile("./msc/model.json")
-			if err != nil{
+			if err != nil {
 				log.Fatal(err)
 			}
 			err = json.Unmarshal(data, &o)
-		} else {
+		case 1:
+			// send correct model, with fake data
 			err = gofakeit.Struct(&o)
+			if err != nil{
+				log.Fatal(err)
+			}
+			bytes, err = json.Marshal(o)
+		case 2:
+			// send incorrect model
+			err = gofakeit.Struct(&bar)
+			if err != nil{
+				log.Fatal(err)
+			}
+			bytes, err = json.Marshal(&bar)
 		}
-		if err != nil{
+		if err != nil {
 			log.Fatal(err)
 		}
-		b, err := json.Marshal(o)
-		if err != nil{
-			log.Fatal(err)
-		}
-		sc.Publish("action", b)
+		sc.Publish("NewOrder", bytes)
 		time.Sleep(3 * time.Second)
 	}
 }
